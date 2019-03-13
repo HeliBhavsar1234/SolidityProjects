@@ -1,0 +1,257 @@
+SOLIDITY EXAMPLES
+------------------------------------------------------------------------------------------------------------
+//LOTTERY PROJECT
+-------------------------------------------------------------------------------------------------
+pragma solidity ^0.5.0;
+contract lottery{
+    address public manager;
+    address payable[]  players;
+   // address[] public players;
+    constructor() public{
+        manager=msg.sender;
+    }
+
+function enter() public  payable{
+    require(msg.value> .01 ether);
+    players.push(msg.sender);
+}
+function random() private view returns (uint){
+   // return uint(keccak256(block.difficulty,now,players));
+   uint(keccak256(abi.encodePacked(block.difficulty,now,players)));
+}
+function pickwinner() public restricted{
+    address payable winner=players[random() % players.length];
+    
+    winner.transfer(address(this).balance);
+    players=new address payable[](0);
+}
+modifier restricted(){
+    require(msg.sender==manager);
+    _;
+}
+function getPlayers() public view returns(address payable[] memory)
+{
+    return players;
+}
+}
+-------------------------------------------------------------------------------------------------------------
+//MODIFIER EXAMPLES
+------------------------------------------------------------------------------------------------------------
+pragma solidity 0.5.0;
+contract mod{
+    
+    
+    modifier onlyAfter(uint _time) { if (now <= _time)_;}
+    modifier onlyOwner { if (msg.sender == owner) _; }
+    
+    modifier onlyIfState (State currState) { if (currState != State.A) _; }
+    
+    
+    function changeOwner(newOwner) public onlyAfter(someTime) onlyOwner onlyIfState(State.A)
+    {
+     owner = newOwner;
+    }
+    
+    modifier checkValue(uint amount) {
+        _;
+        if (msg.value > amount) {
+            uint amountToRefund = amount - msg.value;
+            if (!msg.sender.send(amountToRefund)) {
+                  throw;
+            }
+        }
+    }
+}
+------------------------------------------------------------------------------------------------------------
+//ARRAYS EXAMPLE
+------------------------------------------------------------------------------------------------------------
+pragma solidity ^0.5.0;
+contract SAmpleContract{
+    uint8 [3] nums=[10,20,30];
+    function getNums() public returns(uint8 [3] memory){
+    nums[0]=11;
+    nums[1]=22;
+    nums[2]=33;
+    return nums;
+}
+function getLength() view public returns(uint)
+------------------------------------------------------------------------------------------------------------
+//DATATYPES EXAMPLE
+------------------------------------------------------------------------------------------------------------
+pragma solidity 0.5.0;
+contract VariableExamples{
+    bool public switechedOn=true;
+    address public owner=msg.sender;
+    uint8 public number=8;
+    bytes32 public awesome1="solidity is awesome";
+    string public awesome2="heli";
+}
+
+------------------------------------------------------------------------------------------------------------
+//ENUM EXAMPLE
+------------------------------------------------------------------------------------------------------------
+pragma solidity ^0.5.0;
+
+contract test {
+    enum ActionChoices { GoLeft, GoRight, GoStraight, SitStill }
+    ActionChoices choice;
+    ActionChoices constant defaultChoice = ActionChoices.GoStraight;
+
+    function setGoStraight() public {
+        choice = ActionChoices.GoStraight;
+    }
+
+    
+    function getChoice() public view returns (ActionChoices) {
+        return choice;
+    }
+
+    function getDefaultChoice() public pure returns (uint) {
+        return uint(defaultChoice);
+    }
+}
+------------------------------------------------------------------------------------------------------------
+//MAPPING EXAMPLE
+------------------------------------------------------------------------------------------------------------
+pragma solidity ^0.5.0;
+contract SimpleToken{
+    address owner;
+    mapping(address=>uint256)public accounts;
+    constructor(uint256 initialSupply)public{
+        owner=msg.sender;
+        accounts[owner]=initialSupply;
+    }
+    function transfer(address to,uint256 value)public{
+        require(accounts[msg.sender]>=value);
+         require(accounts[to]+value>=accounts[to]);
+         accounts[msg.sender]-=value;
+         accounts[to]+=value;
+        
+    }
+    function balance()view public returns  (uint256)
+    {
+      return accounts[msg.sender];
+    }
+}
+------------------------------------------------------------------------------------------------------------
+//POWER EXAMPLE
+------------------------------------------------------------------------------------------------------------
+pragma solidity ^0.5.0;
+contract OverflowAndUnder{
+    function overflow() public pure returns(uint256){
+        uint256 max=2**256-1;
+        return max;
+    }
+}
+------------------------------------------------------------------------------------------------------------
+//REVERT EXAMPLE
+------------------------------------------------------------------------------------------------------------
+pragma solidity 0.4.20;
+
+contract Complainer {
+
+    function doRevert() public pure returns(bool success) {
+        revert();
+        return true;
+    }
+
+}
+
+contract Adjacent {
+
+    bool state;
+
+    event LogStateChange(address sender, bool succeeded);
+
+    function setState() public returns(bool success) {
+        state = true;
+        LogStateChange(msg.sender, true);
+        return true;
+    }
+}
+
+contract Originator {
+
+    Complainer c;
+    Adjacent a;
+
+    event LogSucceeded(address sender, bool succeeded);
+    event LogResult(address sender, bool adjacentResponse, bool complainerResponse);
+
+    function Originator(address complainer, address adjacent) public {
+        c = Complainer(complainer);
+        a = Adjacent(adjacent);
+    }
+
+    function test() public returns(bool success) {
+      LogSucceeded(msg.sender, true); 
+      bool aResponse = a.setState();   
+      bool cResponse = c.doRevert();  
+      LogResult(msg.sender, aResponse, cResponse); 
+      return true; // does not happen
+    }
+
+    function test2() public returns(bool success) {
+      LogSucceeded(msg.sender, true); 
+      bool aResponse = a.setState();  
+      bool cResponse = c.call(bytes4(sha3("doRevert()"))); 
+      LogResult(msg.sender, aResponse, cResponse); 
+      return true; // success
+    }
+}
+------------------------------------------------------------------------------------------------------------
+//FUNCTION
+------------------------------------------------------------------------------------------------------------
+pragma solidity ^0.5.0;
+contract err{
+    // var a=5;
+ function a(uint x) returns(uint){
+    return x*2;
+}
+var f=a();
+f(22);   
+}
+------------------------------------------------------------------------------------------------------------
+//gLOBAL VARIABLE
+------------------------------------------------------------------------------------------------------------
+pragma solidity ^0.5.0;
+contract glob{
+uint256 public n=now; 
+uint public a=block.number;
+uint public b=block.difficulty; 
+
+bytes32 public c=blockhash(1);
+function getGasLimit() public view returns(uint) {
+    uint gasLimit;
+
+    assembly {
+        gasLimit := gaslimit
+    }
+    return gasLimit;
+
+}
+}
+------------------------------------------------------------------------------------------------------------
+//FUNCTION OVERLOADING
+pragma solidity ^0.5.0;
+contract inc{
+  function increment(uint8 x)view public  returns (uint8) {
+      x += 1;
+     return x;
+}
+  function increment(uint8 x, uint8 y)view public returns (uint8 , uint8  ) {
+      x += 1;
+       y += 1;
+       return(x,y);
+       
+}
+uint8 y;
+  function increment(uint x) public returns (uint , uint) {
+        x += 1;
+        y += 1; 
+        return(x,y);
+}
+}
+------------------------------------------------------------------------------------------------------------
+
+
